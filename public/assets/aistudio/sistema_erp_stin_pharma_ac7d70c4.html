@@ -1,0 +1,1906 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="docTitle">Stin Pharma - Central de Avarias & Devoluções</title>
+    
+    <!-- Fonts Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- External Libraries: SheetJS (Excel) & Chart.js (Dashboard) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* ==========================================================================
+           1. VARIÁVEIS DE TEMA DINÂMICAS (PERSONALIZAÇÃO TOTAL PELO ADM)
+           ========================================================================== */
+        :root {
+            --primary-color: #0f172a;
+            --accent-color: #2563eb;
+            --bg-color: #f8fafc;
+            --card-bg-color: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #cbd5e1;
+            --font-family: 'Inter', sans-serif;
+            --header-bg: #0f172a;
+            --header-text: #ffffff;
+            --success-color: #16a34a;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --purple-color: #9333ea;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* ==========================================================================
+           2. TELA DE LOGIN INTERATIVA
+           ========================================================================== */
+        .login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1e1b4b 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.2);
+            text-align: center;
+            animation: popIn 0.3s ease-out;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .login-brand-logo {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .login-sub {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 24px;
+        }
+
+        .login-form-group {
+            text-align: left;
+            margin-bottom: 16px;
+        }
+
+        .login-form-group label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #334155;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .login-form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .login-form-group input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+
+        .btn-login:hover {
+            background: #1d4ed8;
+        }
+
+        .quick-login-box {
+            margin-top: 24px;
+            padding-top: 18px;
+            border-top: 1px dashed #cbd5e1;
+            text-align: left;
+        }
+
+        .quick-login-box p {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .quick-btns-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .btn-quick {
+            padding: 8px 4px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .btn-quick:hover {
+            border-color: #2563eb;
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        /* ==========================================================================
+           3. CABEÇALHO & NAVEGAÇÃO DO SISTEMA PRINCIPAL
+           ========================================================================== */
+        #mainSystem {
+            display: none;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-brand h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .header-brand span {
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.15);
+            padding: 3px 10px;
+            border-radius: 12px;
+            color: #94a3b8;
+        }
+
+        .user-panel {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .role-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .role-adm { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+        .role-farmaceutico { background: #dbeafe; color: #1e40af; border: 1px solid #60a5fa; }
+        .role-operador { background: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
+
+        .btn-logout {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: #dc2626;
+            color: white;
+        }
+
+        /* Tab Navigation */
+        nav.nav-tabs {
+            background: var(--primary-color);
+            display: flex;
+            padding: 0 20px;
+            gap: 4px;
+            overflow-x: auto;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            padding: 12px 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            color: #ffffff;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .tab-btn.active {
+            color: #ffffff;
+            border-bottom-color: var(--accent-color);
+            background: rgba(255,255,255,0.12);
+        }
+
+        .tab-btn.hidden {
+            display: none !important;
+        }
+
+        /* Main Container */
+        main {
+            flex: 1;
+            padding: 24px;
+            max-width: 1450px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ==========================================================================
+           4. CARDS, FORMULÁRIOS E GRID
+           ========================================================================== */
+        .card {
+            background: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            color: var(--text-color);
+            margin-bottom: 16px;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .banner-import {
+            background: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .btn-file {
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-file:hover { opacity: 0.9; }
+
+        .btn-file input[type=file] {
+            position: absolute;
+            top: 0; right: 0; min-width: 100%; min-height: 100%;
+            opacity: 0; cursor: pointer;
+        }
+
+        .stat-badge {
+            background: rgba(0,0,0,0.03);
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .grid-kpi {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .kpi-card {
+            background: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 18px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .kpi-card.danger { border-left-color: var(--danger-color); }
+        .kpi-card.warning { border-left-color: var(--warning-color); }
+        .kpi-card.purple { border-left-color: var(--purple-color); }
+        .kpi-card.success { border-left-color: var(--success-color); }
+
+        .kpi-card h3 {
+            font-size: 0.78rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-card .val {
+            font-size: 1.65rem;
+            font-weight: 800;
+            margin-top: 6px;
+            color: var(--text-color);
+        }
+
+        .kpi-card .sub {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-color);
+        }
+
+        input, select, textarea {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+            background: var(--card-bg-color);
+            color: var(--text-color);
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .input-bip {
+            background-color: #fefce8;
+            border: 2px solid var(--warning-color);
+            font-weight: 800;
+            font-size: 1.05rem;
+            color: #0f172a;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary { background: var(--accent-color); color: white; }
+        .btn-primary:hover { opacity: 0.9; }
+
+        .btn-success { background: var(--success-color); color: white; }
+        .btn-danger { background: var(--danger-color); color: white; }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+        .btn-outline:hover { background: rgba(0,0,0,0.04); }
+
+        /* Attachment Upload Zone */
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background: rgba(0,0,0,0.01);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-color);
+            background: rgba(37, 99, 235, 0.03);
+        }
+
+        .attachment-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .attachment-item {
+            background: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .attachment-item img {
+            width: 36px;
+            height: 36px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: rgba(0,0,0,0.03);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        tr:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            display: inline-block;
+            text-transform: uppercase;
+        }
+
+        .badge-parcial { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
+        .badge-total { background: #fee2e2; color: #b91c1c; }
+        .badge-ok { background: #dcfce7; color: #15803d; }
+        .badge-aberto { background: #fef3c7; color: #b45309; }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 20px;
+        }
+
+        /* Toast & Modals */
+        .toast-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            z-index: 2000;
+            display: none;
+            animation: slideUp 0.2s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .toast-box.success { background-color: var(--success-color); }
+        .toast-box.error { background-color: var(--danger-color); }
+        .toast-box.info { background-color: var(--accent-color); }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(3px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1500;
+        }
+
+        .modal-content {
+            background: var(--card-bg-color);
+            border-radius: 10px;
+            padding: 24px;
+            max-width: 680px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #modalPrintArea, #modalPrintArea * { visibility: visible; }
+            #modalPrintArea { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==========================================================================
+         1. TELA DE LOGIN INTERATIVA
+         ========================================================================== -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-card">
+            <div class="login-brand-logo">📦 Stin Pharma</div>
+            <div class="login-title">Acesso ao Sistema</div>
+            <div class="login-sub">Central de Avarias, Devoluções & Gestão Logística</div>
+
+            <form id="formLogin" onsubmit="realizarLogin(event)">
+                <div class="login-form-group">
+                    <label>Usuário</label>
+                    <input type="text" id="loginUsername" placeholder="Ex: admin, farma ou operador" required autofocus>
+                </div>
+                <div class="login-form-group">
+                    <label>Senha</label>
+                    <input type="password" id="loginPassword" placeholder="Digite sua senha..." required>
+                </div>
+                <button type="submit" class="btn-login">🔑 Entrar no Sistema</button>
+            </form>
+
+            <div class="quick-login-box">
+                <p>⚡ Atalhos para Teste Rápido:</p>
+                <div class="quick-btns-grid">
+                    <button type="button" class="btn-quick" onclick="preencherQuickLogin('admin', 'admin123')">👑 Admin</button>
+                    <button type="button" class="btn-quick" onclick="preencherQuickLogin('farma', '1234')">🧪 Farma</button>
+                    <button type="button" class="btn-quick" onclick="preencherQuickLogin('operador', '1234')">📦 Operador</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         2. SISTEMA PRINCIPAL (PÓS-LOGIN)
+         ========================================================================== -->
+    <div id="mainSystem">
+
+        <!-- HEADER TOPBAR -->
+        <header>
+            <div class="header-brand">
+                <h1 id="lblHeaderTitle">Stin Pharma ERP</h1>
+                <span id="lblHeaderSlogan">Central de Avarias & Gestão</span>
+            </div>
+
+            <div class="user-panel">
+                <span class="role-badge role-adm" id="currentRoleBadge">ADM</span>
+                <span id="currentUserName" style="font-size:0.9rem; font-weight:700;">Usuário: Administrador</span>
+                <button class="btn-logout" onclick="realizarLogout()">🚪 Sair</button>
+            </div>
+        </header>
+
+        <!-- NAVEGAÇÃO POR ABAS -->
+        <nav class="nav-tabs" id="mainNavTabs">
+            <button class="tab-btn active" data-tab="tab-ocorrencias" onclick="switchTab('tab-ocorrencias')">🚨 <span class="txt-tab-ocorrencias">Central de Ocorrências</span></button>
+            <button class="tab-btn" data-tab="tab-dashboard" onclick="switchTab('tab-dashboard')">📊 <span class="txt-tab-dash">Dashboard KPIs</span></button>
+            <button class="tab-btn" data-tab="tab-historico" onclick="switchTab('tab-historico')">📋 <span class="txt-tab-historico">Histórico & Fichas</span></button>
+            <button class="tab-btn" data-tab="tab-usuarios" onclick="switchTab('tab-usuarios')">👥 <span class="txt-tab-users">Gestão Usuários</span></button>
+            <button class="tab-btn" data-tab="tab-adm" onclick="switchTab('tab-adm')">⚙️ <span class="txt-tab-adm">Poder Supremo ADM</span></button>
+        </nav>
+
+        <!-- MAIN CONTAINER -->
+        <main>
+
+            <!-- ==========================================================================
+                 MÓDULO 1: CENTRAL DE AVARIAS, QUEBRAS E DEVOLUÇÕES (COM ANEXOS)
+                 ========================================================================== -->
+            <div id="tab-ocorrencias" class="tab-content active">
+                
+                <!-- Import Excel (1125.xlsx) Banner -->
+                <div class="banner-import">
+                    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                        <div class="btn-file">
+                            📥 Importar Planilha (1125.xlsx)
+                            <input type="file" id="excelFileInput" accept=".xlsx, .xls" onchange="importarExcelStin(event)">
+                        </div>
+                        <span style="font-size:0.85rem; color:#64748b;">Suporta a aba <strong>"4-Pedidos"</strong> preenchendo valor de produto e frete.</span>
+                    </div>
+                    <div class="stat-badge" id="lblBaseCount">Base de Pedidos no Banco: <strong>0</strong></div>
+                </div>
+
+                <div class="card">
+                    <h2>🚨 Registrar Ocorrência, Quebra ou Devolução</h2>
+                    <form id="formOcorrencia" onsubmit="salvarOcorrenciaComAnexos(event)">
+                        <div class="form-grid">
+                            <div class="form-group full">
+                                <label>BIPAR OU BUSCAR CÓDIGO DO PEDIDO / MALOTE:</label>
+                                <input type="text" id="ocBipInput" class="input-bip" placeholder="Bipe aqui ex: 101409 ou Malote 048935..." oninput="buscarPedidoOcorrencia(this.value)">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Nº do Pedido</label>
+                                <input type="text" id="ocPedido" required placeholder="Ex: 101409">
+                            </div>
+                            <div class="form-group">
+                                <label>Nº do Malote</label>
+                                <input type="text" id="ocMalote" placeholder="Ex: 048935">
+                            </div>
+                            <div class="form-group">
+                                <label>Cliente / Paciente</label>
+                                <input type="text" id="ocCliente" required placeholder="Nome do Cliente">
+                            </div>
+                            <div class="form-group">
+                                <label>Transportadora</label>
+                                <select id="ocTransp" required>
+                                    <option value="TRANSPORTADORA">TRANSPORTADORA</option>
+                                    <option value="MOTOBOY">MOTOBOY</option>
+                                    <option value="AZUL AEREAS">AZUL AÉREAS</option>
+                                    <option value="ATIVA">ATIVA</option>
+                                    <option value="SEDEX">SEDEX</option>
+                                    <option value="MOTO ESPORADICO">MOTO ESPORÁDICO</option>
+                                    <option value="OUTRA">OUTRA</option>
+                                </select>
+                            </div>
+
+                            <!-- VALORES: PRODUTO + FRETE EXTRAÍDO -->
+                            <div class="form-group">
+                                <label>Valor dos Produtos (R$)</label>
+                                <input type="number" step="0.01" id="ocValProduto" required placeholder="0.00" oninput="calcOcTotal()">
+                            </div>
+                            <div class="form-group">
+                                <label>Valor do Frete Planilha (R$)</label>
+                                <input type="number" step="0.01" id="ocValFrete" placeholder="0.00" oninput="calcOcTotal()">
+                            </div>
+                            <div class="form-group">
+                                <label>Prejuízo Total Bruto (R$)</label>
+                                <input type="number" step="0.01" id="ocValTotal" readonly style="background:#f1f5f9; font-weight:bold; color:var(--danger-color)">
+                            </div>
+                            <div class="form-group">
+                                <label>Estado (UF)</label>
+                                <input type="text" id="ocEstado" placeholder="Ex: SP">
+                            </div>
+
+                            <!-- RECEBIMENTO PARCIAL X TOTAL -->
+                            <div class="form-group full" style="background: rgba(0,0,0,0.02); padding: 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+                                <label style="font-size:0.95rem; color:var(--primary-color);">Modalidade de Retorno / Recebimento:</label>
+                                <div style="display:flex; gap: 20px; margin-top: 6px;">
+                                    <label style="font-weight:normal; cursor:pointer;"><input type="radio" name="ocTipoRetorno" value="TOTAL" checked onclick="toggleOcParcial(false)"> 🔴 Devolução Total do Pedido</label>
+                                    <label style="font-weight:normal; cursor:pointer;"><input type="radio" name="ocTipoRetorno" value="PARCIAL" onclick="toggleOcParcial(true)"> ⚠️ Devolução Parcial (Sinalizar Produto Retornado)</label>
+                                </div>
+                            </div>
+
+                            <!-- SEÇÃO DE ITEM PARCIAL -->
+                            <div class="form-group full" id="ocBoxParcial" style="display:none; background:#fffbeeb0; border:1px dashed var(--warning-color); padding:12px; border-radius:6px;">
+                                <label style="color:var(--warning-color)">⚠️ SINALIZAR PRODUTO ESPECÍFICO QUE RETORNOU:</label>
+                                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                                    <input type="text" id="ocItemParcialNome" placeholder="Nome do produto especificamente retornado" style="flex:3; min-width:200px;">
+                                    <input type="number" id="ocItemParcialQtd" placeholder="Qtd" value="1" style="flex:1; min-width:80px;">
+                                </div>
+                            </div>
+
+                            <!-- Classificação Operacional -->
+                            <div class="form-group">
+                                <label>Tipo de Ocorrência</label>
+                                <select id="ocTipo" required>
+                                    <option value="Devolução de Cliente">Devolução de Cliente</option>
+                                    <option value="Quebra Operacional">Quebra Operacional / Avaria</option>
+                                    <option value="Extravio Transporte">Extravio / Sinistro Transporte</option>
+                                    <option value="Desvio Temperatura">Desvio de Temperatura (Gelo)</option>
+                                    <option value="Erro Rótulo/Etiqueta">Erro de Rótulo / Divergência</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Setor Responsável</label>
+                                <select id="ocSetor" required>
+                                    <option value="Transportadora">Transportadora (Trânsito)</option>
+                                    <option value="Laboratorio">Laboratório / Manipulação</option>
+                                    <option value="Expedicao">Expedição / Embalagem</option>
+                                    <option value="Cliente">Cliente / Endereço Incorreto</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Motivo</label>
+                                <select id="ocMotivo">
+                                    <option value="Endereço não localizado / Ausente">Endereço não localizado / Ausente</option>
+                                    <option value="Frasco Quebrado / Vazamento">Frasco Quebrado / Vazamento</option>
+                                    <option value="Recusado pelo cliente">Recusado pelo cliente</option>
+                                    <option value="Temperatura fora do padrão / Gelo derretido">Temperatura fora do padrão / Gelo derretido</option>
+                                    <option value="Carga Roubada / Extraviada">Carga Roubada / Extraviada</option>
+                                    <option value="Avariado na Manipulação">Avariado na Manipulação</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Ação Tomada</label>
+                                <select id="ocAcao" required>
+                                    <option value="Reenvio (Novo Pedido)">Reenvio (Novo Pedido)</option>
+                                    <option value="Descarte / Lixo Hospitalar">Descarte / Lixo Hospitalar</option>
+                                    <option value="Retorno ao Estoque">Retorno ao Estoque (Íntegro)</option>
+                                    <option value="Cobrança Transportadora">Cobrança de Ressarcimento à Transportadora</option>
+                                </select>
+                            </div>
+
+                            <!-- ANEXAÇÃO DE DOCUMENTOS / FOTOS / LAUDOS -->
+                            <div class="form-group full">
+                                <label>📎 Anexar Documentos, Fotos da Avaria ou Laudos (Salvo no IndexedDB)</label>
+                                <div class="upload-area" onclick="document.getElementById('fileAttachmentInput').click()">
+                                    📁 Clique aqui para selecionar arquivos (Fotos, PDFs, Laudos)
+                                    <input type="file" id="fileAttachmentInput" multiple accept="image/*, .pdf, .doc, .docx" style="display:none;" onchange="handleFileSelect(event)">
+                                </div>
+                                <div class="attachment-list" id="attachmentListPreview"></div>
+                            </div>
+
+                            <div class="form-group full">
+                                <label>Observações Adicionais</label>
+                                <textarea id="ocObs" rows="2" placeholder="Detalhes técnicos sobre a avaria..."></textarea>
+                            </div>
+
+                            <div class="form-group full" style="display:flex; gap:10px;">
+                                <button type="submit" class="btn btn-primary" style="flex:2;">💾 Gravar Ocorrência com Anexos no Banco</button>
+                                <button type="button" class="btn btn-outline" onclick="limparFormOcorrencia()" style="flex:1;">🔄 Limpar</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ==========================================================================
+                 MÓDULO 2: DASHBOARD & KPIS DE PERDAS (CHART.JS)
+                 ========================================================================== -->
+            <div id="tab-dashboard" class="tab-content">
+                <div class="grid-kpi">
+                    <div class="kpi-card danger">
+                        <h3>Prejuízo Acumulado</h3>
+                        <div class="val" id="kpiTotalPrejuizo">R$ 0,00</div>
+                        <div class="sub">Produtos + Frete Desperdiçado</div>
+                    </div>
+                    <div class="kpi-card warning">
+                        <h3>Frete Perdido</h3>
+                        <div class="val" id="kpiTotalFrete">R$ 0,00</div>
+                        <div class="sub">Extraído da coluna Frete</div>
+                    </div>
+                    <div class="kpi-card purple">
+                        <h3>Devoluções Parciais</h3>
+                        <div class="val" id="kpiQtdParciais">0</div>
+                        <div class="sub">Itens específicos retornados</div>
+                    </div>
+                    <div class="kpi-card danger">
+                        <h3>Top Transportadora em Perdas</h3>
+                        <div class="val" id="kpiTopTransp" style="font-size: 1.2rem;">-</div>
+                        <div class="sub" id="kpiTopTranspValor">R$ 0,00</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="card">
+                        <h2>Perdas (R$) por Transportadora</h2>
+                        <canvas id="chartTransp"></canvas>
+                    </div>
+                    <div class="card">
+                        <h2>Devoluções Totais vs Parciais</h2>
+                        <canvas id="chartTipos"></canvas>
+                    </div>
+                    <div class="card">
+                        <h2>Origem do Problema por Setor</h2>
+                        <canvas id="chartSetores"></canvas>
+                    </div>
+                    <div class="card">
+                        <h2>Principais Motivos de Devolução / Avaria</h2>
+                        <canvas id="chartMotivos"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================================================
+                 MÓDULO 3: HISTÓRICO & EMISSÃO DE FICHA/MINUTA
+                 ========================================================================== -->
+            <div id="tab-historico" class="tab-content">
+                <div class="card">
+                    <h2>
+                        <span>Histórico de Ocorrências e Laudos</span>
+                        <button class="btn btn-danger" id="btnLimparHistorico" onclick="limparHistoricoIndexedDB()" style="font-size: 0.8rem;">🗑️ Apagar Histórico</button>
+                    </h2>
+
+                    <!-- Filtros -->
+                    <div class="form-grid" style="margin-bottom:15px;">
+                        <div class="form-group">
+                            <label>Buscar (Pedido, Cliente, Malote)</label>
+                            <input type="text" id="filtroBusca" placeholder="Pesquisar..." onkeyup="filtrarHistorico()">
+                        </div>
+                        <div class="form-group">
+                            <label>Transportadora</label>
+                            <select id="filtroTransp" onchange="filtrarHistorico()">
+                                <option value="">Todas</option>
+                                <option value="TRANSPORTADORA">TRANSPORTADORA</option>
+                                <option value="MOTOBOY">MOTOBOY</option>
+                                <option value="AZUL AEREAS">AZUL AÉREAS</option>
+                                <option value="ATIVA">ATIVA</option>
+                                <option value="SEDEX">SEDEX</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Pedido</th>
+                                    <th>Malote</th>
+                                    <th>Cliente</th>
+                                    <th>Transp.</th>
+                                    <th>Modalidade / Item</th>
+                                    <th>Anexos</th>
+                                    <th>Prejuízo (R$)</th>
+                                    <th>Registrado Por</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyOcorrencias">
+                                <tr><td colspan="10" style="text-align:center;">Carregando dados...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================================================
+                 MÓDULO 4: GESTÃO DE USUÁRIOS (EXCLUSIVO ADM)
+                 ========================================================================== -->
+            <div id="tab-usuarios" class="tab-content">
+                <div class="card">
+                    <h2>👥 Gestão de Usuários e Níveis Hierárquicos</h2>
+                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">
+                        Cadastre novos logins e defina suas permissões: <strong>ADM (Poder Supremo)</strong>, <strong>Farmacêutico</strong> e <strong>Operador</strong>.
+                    </p>
+
+                    <form id="formNovoUsuario" onsubmit="cadastrarNovoUsuario(event)" class="form-grid">
+                        <div class="form-group">
+                            <label>Nome Completo</label>
+                            <input type="text" id="usrNome" required placeholder="Ex: Dra. Juliana Lima">
+                        </div>
+                        <div class="form-group">
+                            <label>Usuário (Login)</label>
+                            <input type="text" id="usrLogin" required placeholder="Ex: juliana">
+                        </div>
+                        <div class="form-group">
+                            <label>Nível Hierárquico</label>
+                            <select id="usrFuncao" required>
+                                <option value="OPERADOR">Operador (Bipagem & Anexos)</option>
+                                <option value="FARMACEUTICO">Farmacêutico (Laudos & Aprovações)</option>
+                                <option value="ADM">Administrador (Poder Supremo)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Senha de Acesso</label>
+                            <input type="password" id="usrSenha" required placeholder="Digite a senha...">
+                        </div>
+                        <div class="form-group full">
+                            <button type="submit" class="btn btn-primary">➕ Cadastrar Usuário</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2>Usuários Cadastrados no Banco</h2>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Login</th>
+                                    <th>Nível Hierárquico</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyUsuarios"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================================================
+                 MÓDULO 5: PODER SUPREMO ADM (PERSONALIZAÇÃO TOTAL DO SISTEMA)
+                 ========================================================================== -->
+            <div id="tab-adm" class="tab-content">
+                <div class="card">
+                    <h2>👑 Painel de Personalização Total do Sistema (Poder Supremo ADM)</h2>
+                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">
+                        Edite as cores, fontes, títulos e rótulos de abas em tempo real com gravação persistente no IndexedDB.
+                    </p>
+
+                    <!-- Cores -->
+                    <h3 style="font-size:0.95rem; margin-bottom:10px; color:var(--accent-color);">1. Paleta de Cores Globais</h3>
+                    <div class="form-grid" style="margin-bottom:20px;">
+                        <div class="form-group">
+                            <label>Cor Primária (Header/Nav)</label>
+                            <input type="color" id="cfgColorPrimary" value="#0f172a" onchange="aplicarPersonalizacaoLive()">
+                        </div>
+                        <div class="form-group">
+                            <label>Cor de Destaque (Botões/Links)</label>
+                            <input type="color" id="cfgColorAccent" value="#2563eb" onchange="aplicarPersonalizacaoLive()">
+                        </div>
+                        <div class="form-group">
+                            <label>Cor de Fundo da Tela</label>
+                            <input type="color" id="cfgColorBg" value="#f8fafc" onchange="aplicarPersonalizacaoLive()">
+                        </div>
+                        <div class="form-group">
+                            <label>Cor dos Cards</label>
+                            <input type="color" id="cfgColorCard" value="#ffffff" onchange="aplicarPersonalizacaoLive()">
+                        </div>
+                        <div class="form-group">
+                            <label>Cor de Texto Geral</label>
+                            <input type="color" id="cfgColorText" value="#1e293b" onchange="aplicarPersonalizacaoLive()">
+                        </div>
+                    </div>
+
+                    <!-- Tipografia -->
+                    <h3 style="font-size:0.95rem; margin-bottom:10px; color:var(--accent-color);">2. Tipografia / Fonte Geral</h3>
+                    <div class="form-grid" style="margin-bottom:20px;">
+                        <div class="form-group full">
+                            <label>Fonte Principal do Sistema</label>
+                            <select id="cfgFontFamily" onchange="aplicarPersonalizacaoLive()">
+                                <option value="'Inter', sans-serif">Inter (Moderno & Limpo)</option>
+                                <option value="'Roboto', sans-serif">Roboto (Clean)</option>
+                                <option value="'Montserrat', sans-serif">Montserrat (Corporativo / Marcante)</option>
+                                <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Segoe UI (Nativo Windows)</option>
+                                <option value="'Courier Prime', monospace">Courier (Terminal Industrial)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Textos e Rótulos -->
+                    <h3 style="font-size:0.95rem; margin-bottom:10px; color:var(--accent-color);">3. Edição de Rótulos & Textos do Sistema</h3>
+                    <div class="form-grid" style="margin-bottom:20px;">
+                        <div class="form-group">
+                            <label>Título do Cabeçalho</label>
+                            <input type="text" id="cfgTextTitle" value="Stin Pharma ERP" oninput="aplicarPersonalizacaoLive()">
+                        </div>
+                        <div class="form-group">
+                            <label>Slogan do Cabeçalho</label>
+                            <input type="text" id="cfgTextSlogan" value="Central de Avarias & Gestão" oninput="aplicarPersonalizacaoLive()">
+                        </div>
+                        <div class="form-group">
+                            <label>Aba Central de Ocorrências</label>
+                            <input type="text" id="cfgTabOcorrencias" value="Central de Ocorrências" oninput="aplicarPersonalizacaoLive()">
+                        </div>
+                        <div class="form-group">
+                            <label>Aba Dashboard KPIs</label>
+                            <input type="text" id="cfgTabDash" value="Dashboard KPIs" oninput="aplicarPersonalizacaoLive()">
+                        </div>
+                        <div class="form-group">
+                            <label>Aba Histórico & Fichas</label>
+                            <input type="text" id="cfgTabHistorico" value="Histórico & Fichas" oninput="aplicarPersonalizacaoLive()">
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:10px; margin-top:20px;">
+                        <button class="btn btn-primary" onclick="salvarPersonalizacaoConfigDB()">💾 Salvar Personalização no Banco</button>
+                        <button class="btn btn-outline" onclick="restaurarPadraoConfig()">🔄 Restaurar Padrões Originais</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL DE DETALHES DA OCORRÊNCIA E IMPRESSÃO DE FICHA -->
+    <div id="modalFicha" class="modal">
+        <div class="modal-content" id="modalPrintArea">
+            <h2 style="border-bottom:2px solid var(--primary-color); padding-bottom:8px; margin-bottom:12px;">
+                Ficha de Vistoria de Ocorrência / Laudo Técnico
+            </h2>
+            <div id="modalFichaCorpo"></div>
+
+            <h3 style="font-size:0.95rem; margin-top:15px; margin-bottom:8px; color:var(--accent-color);">📎 Anexos e Imagens da Avaria:</h3>
+            <div id="modalFichaAnexos" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
+
+            <div style="margin-top:20px; display:flex; gap:10px; justify-content:flex-end;" class="no-print">
+                <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir Laudo / Ficha</button>
+                <button class="btn btn-outline" onclick="fecharModalFicha()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toastBox" class="toast-box"></div>
+
+    <!-- ==========================================================================
+         LÓGICA JAVASCRIPT & INDEXEDDB ENGINE
+         ========================================================================== -->
+    <script>
+        // --- 1. BANCO DE DADOS INDEXEDDB (StinPharmaDB) ---
+        let db;
+        const DB_NAME = 'StinPharmaDB';
+        const DB_VERSION = 1;
+
+        function initIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onupgradeneeded = function(e) {
+                    db = e.target.result;
+
+                    // Store: Ocorrências com Anexos em Base64
+                    if (!db.objectStoreNames.contains('ocorrencias')) {
+                        db.createObjectStore('ocorrencias', { keyPath: 'id' });
+                    }
+
+                    // Store: Usuários e Senhas
+                    if (!db.objectStoreNames.contains('usuarios')) {
+                        db.createObjectStore('usuarios', { keyPath: 'id' });
+                    }
+
+                    // Store: Configurações de Tema e Textos ADM
+                    if (!db.objectStoreNames.contains('configuracoes')) {
+                        db.createObjectStore('configuracoes', { keyPath: 'key' });
+                    }
+
+                    // Store: Base de Pedidos Importados da Planilha (1125.xlsx)
+                    if (!db.objectStoreNames.contains('pedidosBase')) {
+                        const pStore = db.createObjectStore('pedidosBase', { keyPath: 'idAuto', autoIncrement: true });
+                        pStore.createIndex('pedido', 'pedido', { unique: false });
+                        pStore.createIndex('malote', 'malote', { unique: false });
+                    }
+                };
+
+                request.onsuccess = function(e) {
+                    db = e.target.result;
+                    resolve(db);
+                };
+
+                request.onerror = function(e) {
+                    console.error("Erro IndexedDB", e);
+                    reject(e);
+                };
+            });
+        }
+
+        // --- 2. GERENCIAMENTO DE ESTADO GLOBAL E LOGIN ---
+        let usuarioLogado = null;
+        let tempAnexos = [];
+        let chartTranspInst, chartTiposInst, chartSetoresInst, chartMotivosInst;
+
+        window.onload = async function() {
+            await initIndexedDB();
+            await carregarUsuariosIniciais();
+            await carregarConfiguracoesADM();
+            atualizarContadorBasePedidos();
+        };
+
+        function tocarBeep(sucesso = true) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = sucesso ? 'sine' : 'sawtooth';
+                osc.frequency.value = sucesso ? 880 : 300;
+                gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                osc.start(); osc.stop(ctx.currentTime + (sucesso ? 0.15 : 0.35));
+            } catch(e) {}
+        }
+
+        function mostrarToast(msg, tipo = 'info') {
+            const toast = document.getElementById('toastBox');
+            toast.className = `toast-box ${tipo}`;
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 4000);
+        }
+
+        // PREENCHIMENTO RÁPIDO DE LOGIN
+        function preencherQuickLogin(usr, pwd) {
+            document.getElementById('loginUsername').value = usr;
+            document.getElementById('loginPassword').value = pwd;
+            realizarLogin(new Event('submit'));
+        }
+
+        async function realizarLogin(e) {
+            if (e) e.preventDefault();
+
+            const usr = document.getElementById('loginUsername').value.trim();
+            const pwd = document.getElementById('loginPassword').value.trim();
+
+            const tx = db.transaction(['usuarios'], 'readonly');
+            const usuarios = await new Promise(res => tx.objectStore('usuarios').getAll().onsuccess = evt => res(evt.target.result));
+
+            const u = usuarios.find(item => item.login.toLowerCase() === usr.toLowerCase() && item.senha === pwd);
+
+            if (u) {
+                if (!u.ativo) {
+                    mostrarToast('Acesso negado: Este usuário está bloqueado!', 'error');
+                    return;
+                }
+
+                usuarioLogado = u;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainSystem').style.display = 'flex';
+
+                aplicarPermissoesPorRole();
+                await renderizarHistoricoOcorrencias();
+                await atualizarDashboardMetrics();
+                await renderizarListaUsuarios();
+
+                tocarBeep(true);
+                mostrarToast(`Bem-vindo, ${u.nome}! (${u.funcao})`, 'success');
+            } else {
+                tocarBeep(false);
+                mostrarToast('Usuário ou senha incorretos!', 'error');
+            }
+        }
+
+        function realizarLogout() {
+            usuarioLogado = null;
+            document.getElementById('mainSystem').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            mostrarToast('Sessão encerrada.', 'info');
+        }
+
+        function aplicarPermissoesPorRole() {
+            document.getElementById('currentRoleBadge').textContent = usuarioLogado.funcao;
+            document.getElementById('currentRoleBadge').className = `role-badge role-${usuarioLogado.funcao.toLowerCase()}`;
+            document.getElementById('currentUserName').textContent = `Usuário: ${usuarioLogado.nome}`;
+
+            const tabs = document.querySelectorAll('#mainNavTabs .tab-btn');
+
+            tabs.forEach(tab => {
+                const tabId = tab.getAttribute('data-tab');
+
+                if (usuarioLogado.funcao === 'OPERADOR') {
+                    if (tabId === 'tab-adm' || tabId === 'tab-usuarios') {
+                        tab.classList.add('hidden');
+                    } else {
+                        tab.classList.remove('hidden');
+                    }
+                } else if (usuarioLogado.funcao === 'FARMACEUTICO') {
+                    if (tabId === 'tab-adm') {
+                        tab.classList.add('hidden');
+                    } else {
+                        tab.classList.remove('hidden');
+                    }
+                } else {
+                    tab.classList.remove('hidden');
+                }
+            });
+
+            // Botão de excluir histórico só para ADM
+            const btnLimpar = document.getElementById('btnLimparHistorico');
+            if (btnLimpar) btnLimpar.style.display = usuarioLogado.funcao === 'ADM' ? 'inline-flex' : 'none';
+
+            switchTab('tab-ocorrencias');
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            document.querySelectorAll('#mainNavTabs .tab-btn').forEach(tb => tb.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            const btnActive = document.querySelector(`[data-tab="${tabId}"]`);
+            if (btnActive) btnActive.classList.add('active');
+
+            if (tabId === 'tab-dashboard') atualizarDashboardMetrics();
+        }
+
+        // --- 3. INICIALIZAÇÃO DE USUÁRIOS E EXEMPLOS NO BANCO ---
+        async function carregarUsuariosIniciais() {
+            const tx = db.transaction(['usuarios'], 'readonly');
+            const usuarios = await new Promise(res => tx.objectStore('usuarios').getAll().onsuccess = e => res(e.target.result));
+
+            if (usuarios.length === 0) {
+                const padroes = [
+                    { id: 1, nome: "Administrador Geral", login: "admin", senha: "admin123", funcao: "ADM", ativo: true },
+                    { id: 2, nome: "Dra. Beatriz Santos", login: "farma", senha: "1234", funcao: "FARMACEUTICO", ativo: true },
+                    { id: 3, nome: "Carlos Oliveira", login: "operador", senha: "1234", funcao: "OPERADOR", ativo: true }
+                ];
+                const txW = db.transaction(['usuarios'], 'readwrite');
+                padroes.forEach(u => txW.objectStore('usuarios').put(u));
+            }
+
+            // Popula amostra de ocorrência caso esteja totalmente limpo
+            const txO = db.transaction(['ocorrencias'], 'readonly');
+            const ocorrencias = await new Promise(res => txO.objectStore('ocorrencias').getAll().onsuccess = e => res(e.target.result));
+
+            if (ocorrencias.length === 0) {
+                const amostras = [
+                    {
+                        id: 1700000000001,
+                        dataHora: "28/10/2026 10:15:00",
+                        pedido: "101409",
+                        malote: "048935",
+                        cliente: "GISELLY DE FATIMA MENDES PASCOAL",
+                        transportadora: "MOTOBOY",
+                        valorProduto: 1984.62,
+                        valorFrete: 45.00,
+                        valorTotal: 2029.62,
+                        estado: "SP",
+                        isParcial: false,
+                        itemSinalizado: "Devolução Total",
+                        tipo: "Quebra Operacional",
+                        setor: "Laboratorio",
+                        motivo: "Frasco Quebrado / Vazamento",
+                        acao: "Reenvio (Novo Pedido)",
+                        obs: "Frasco danificado durante a manipulação.",
+                        anexos: [],
+                        registradoPor: "Dra. Beatriz Santos"
+                    }
+                ];
+                const txOW = db.transaction(['ocorrencias'], 'readwrite');
+                amostras.forEach(o => txOW.objectStore('ocorrencias').put(o));
+            }
+        }
+
+        async function renderizarListaUsuarios() {
+            const tx = db.transaction(['usuarios'], 'readonly');
+            const list = await new Promise(res => tx.objectStore('usuarios').getAll().onsuccess = e => res(e.target.result));
+
+            const tbody = document.getElementById('tbodyUsuarios');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            list.forEach(u => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${u.nome}</strong></td>
+                    <td><code>${u.login}</code></td>
+                    <td><span class="role-badge role-${u.funcao.toLowerCase()}">${u.funcao}</span></td>
+                    <td><span class="badge ${u.ativo ? 'badge-ok' : 'badge-total'}">${u.ativo ? 'Ativo' : 'Bloqueado'}</span></td>
+                    <td>
+                        <button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="alternarStatusUsuario(${u.id})">${u.ativo ? '🚫 Bloquear' : '✅ Ativar'}</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function cadastrarNovoUsuario(e) {
+            e.preventDefault();
+            if (usuarioLogado.funcao !== 'ADM') return;
+
+            const novo = {
+                id: Date.now(),
+                nome: document.getElementById('usrNome').value.trim(),
+                login: document.getElementById('usrLogin').value.trim(),
+                funcao: document.getElementById('usrFuncao').value,
+                senha: document.getElementById('usrSenha').value,
+                ativo: true
+            };
+
+            const tx = db.transaction(['usuarios'], 'readwrite');
+            tx.objectStore('usuarios').put(novo);
+            tx.oncomplete = () => {
+                mostrarToast('Usuário cadastrado com sucesso!', 'success');
+                document.getElementById('formNovoUsuario').reset();
+                renderizarListaUsuarios();
+            };
+        }
+
+        async function alternarStatusUsuario(id) {
+            const tx = db.transaction(['usuarios'], 'readwrite');
+            const store = tx.objectStore('usuarios');
+            const u = await new Promise(res => store.get(id).onsuccess = e => res(e.target.result));
+
+            if (u) {
+                u.ativo = !u.ativo;
+                store.put(u);
+                tx.oncomplete = () => {
+                    mostrarToast(`Status de ${u.nome} alterado!`, 'info');
+                    renderizarListaUsuarios();
+                };
+            }
+        }
+
+        // --- 4. IMPORTAÇÃO DE PLANILHA EXCEL (1125.xlsx - 4-Pedidos) ---
+        function importarExcelStin(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    let targetSheet = workbook.SheetNames.find(n => n.trim().toLowerCase() === '4-pedidos') || workbook.SheetNames[0];
+                    const rawMatrix = XLSX.utils.sheet_to_json(workbook.Sheets[targetSheet], { header: 1 });
+
+                    let headerIdx = rawMatrix.findIndex(r => Array.isArray(r) && r.some(c => String(c||'').toLowerCase().includes('pedido')));
+                    if (headerIdx === -1) headerIdx = 0;
+
+                    const headers = rawMatrix[headerIdx].map(h => String(h||'').trim());
+                    const lista = [];
+
+                    for (let i = headerIdx + 1; i < rawMatrix.length; i++) {
+                        const row = rawMatrix[i];
+                        if (!row || row.length === 0) continue;
+
+                        let obj = {};
+                        headers.forEach((h, colIdx) => { if(h) obj[h] = row[colIdx] !== undefined ? row[colIdx] : ''; });
+
+                        const numPedido = getCampoFuzzy(obj, ['Pedido', 'Nº Pedido']);
+                        if (numPedido) {
+                            lista.push({
+                                pedido: String(numPedido).trim(),
+                                malote: String(getCampoFuzzy(obj, ['Malote', 'Nº Malote'])).replace(/\.0$/, '').trim(),
+                                cliente: String(getCampoFuzzy(obj, ['Cliente', 'Paciente'])).trim(),
+                                transportadora: String(getCampoFuzzy(obj, ['Transportadora', 'Transp']) || 'TRANSPORTADORA').trim().toUpperCase(),
+                                produto: String(getCampoFuzzy(obj, ['Produto', 'Item'])).trim(),
+                                total: parseValNum(getCampoFuzzy(obj, ['Total', 'Preco Venda'])),
+                                frete: parseValNum(getCampoFuzzy(obj, ['Frete', 'Vlr Frete'])),
+                                estado: String(getCampoFuzzy(obj, ['ESTADO', 'UF'])).trim()
+                            });
+                        }
+                    }
+
+                    const tx = db.transaction(['pedidosBase'], 'readwrite');
+                    const store = tx.objectStore('pedidosBase');
+                    store.clear();
+                    lista.forEach(item => store.add(item));
+
+                    tx.oncomplete = () => {
+                        tocarBeep(true);
+                        mostrarToast(`✅ ${lista.length} pedidos importados para o banco IndexedDB!`, 'success');
+                        atualizarContadorBasePedidos();
+                    };
+                } catch(err) {
+                    mostrarToast(`Erro ao ler planilha: ${err.message}`, 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function atualizarContadorBasePedidos() {
+            const tx = db.transaction(['pedidosBase'], 'readonly');
+            const pedidos = await new Promise(res => tx.objectStore('pedidosBase').getAll().onsuccess = e => res(e.target.result));
+            document.getElementById('lblBaseCount').innerHTML = `Base de Pedidos no Banco: <strong>${pedidos.length} carregados</strong>`;
+        }
+
+        async function buscarPedidoOcorrencia(val) {
+            const query = String(val).trim().toLowerCase();
+            if (!query) return;
+
+            const tx = db.transaction(['pedidosBase'], 'readonly');
+            const todos = await new Promise(res => tx.objectStore('pedidosBase').getAll().onsuccess = e => res(e.target.result));
+
+            const p = todos.find(item => item.pedido.toLowerCase() === query || (item.malote && item.malote.toLowerCase() === query));
+            if (p) {
+                document.getElementById('ocPedido').value = p.pedido;
+                document.getElementById('ocMalote').value = p.malote || '';
+                document.getElementById('ocCliente').value = p.cliente;
+                document.getElementById('ocEstado').value = p.estado || '';
+                document.getElementById('ocValProduto').value = p.total;
+                document.getElementById('ocValFrete').value = p.frete;
+
+                const selectTransp = document.getElementById('ocTransp');
+                let found = Array.from(selectTransp.options).some(opt => opt.value === p.transportadora);
+                selectTransp.value = found ? p.transportadora : "OUTRA";
+
+                calcOcTotal();
+                tocarBeep(true);
+                mostrarToast(`Pedido ${p.pedido} localizado na base!`, 'success');
+            }
+        }
+
+        // --- 5. LÓGICA DE REGISTRO E ANEXOS DA OCORRÊNCIA ---
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    tempAnexos.push({
+                        name: file.name,
+                        type: file.type,
+                        dataUrl: evt.target.result
+                    });
+                    renderizarPreviewsAnexos();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function renderizarPreviewsAnexos() {
+            const container = document.getElementById('attachmentListPreview');
+            container.innerHTML = '';
+
+            tempAnexos.forEach((a, index) => {
+                const isImg = a.type.startsWith('image/');
+                container.innerHTML += `
+                    <div class="attachment-item">
+                        ${isImg ? `<img src="${a.dataUrl}">` : '📄'}
+                        <span>${a.name}</span>
+                        <button type="button" class="btn btn-danger" style="padding:2px 6px; font-size:0.65rem;" onclick="removerAnexoTemp(${index})">✕</button>
+                    </div>
+                `;
+            });
+        }
+
+        function removerAnexoTemp(idx) {
+            tempAnexos.splice(idx, 1);
+            renderizarPreviewsAnexos();
+        }
+
+        function calcOcTotal() {
+            const vP = parseFloat(document.getElementById('ocValProduto').value) || 0;
+            const vF = parseFloat(document.getElementById('ocValFrete').value) || 0;
+            document.getElementById('ocValTotal').value = (vP + vF).toFixed(2);
+        }
+
+        function toggleOcParcial(isParcial) {
+            document.getElementById('ocBoxParcial').style.display = isParcial ? 'block' : 'none';
+        }
+
+        async function salvarOcorrenciaComAnexos(e) {
+            e.preventDefault();
+
+            const isParcial = document.querySelector('input[name="ocTipoRetorno"]:checked').value === 'PARCIAL';
+            let itemSinalizado = 'Devolução Total';
+
+            if (isParcial) {
+                const pNome = document.getElementById('ocItemParcialNome').value.trim();
+                const pQtd = document.getElementById('ocItemParcialQtd').value || 1;
+                if (pNome) itemSinalizado = `⚠️ PARCIAL: ${pNome} (${pQtd} un)`;
+            }
+
+            const novaOcorrencia = {
+                id: Date.now(),
+                dataHora: new Date().toLocaleString('pt-BR'),
+                pedido: document.getElementById('ocPedido').value.trim(),
+                malote: document.getElementById('ocMalote').value.trim(),
+                cliente: document.getElementById('ocCliente').value.trim(),
+                transportadora: document.getElementById('ocTransp').value,
+                valorProduto: parseFloat(document.getElementById('ocValProduto').value) || 0,
+                valorFrete: parseFloat(document.getElementById('ocValFrete').value) || 0,
+                valorTotal: parseFloat(document.getElementById('ocValTotal').value) || 0,
+                estado: document.getElementById('ocEstado').value.trim(),
+                tipo: document.getElementById('ocTipo').value,
+                setor: document.getElementById('ocSetor').value,
+                motivo: document.getElementById('ocMotivo').value,
+                acao: document.getElementById('ocAcao').value,
+                isParcial: isParcial,
+                itemSinalizado: itemSinalizado,
+                obs: document.getElementById('ocObs').value.trim(),
+                anexos: [...tempAnexos],
+                registradoPor: usuarioLogado.nome
+            };
+
+            const tx = db.transaction(['ocorrencias'], 'readwrite');
+            tx.objectStore('ocorrencias').put(novaOcorrencia);
+            tx.oncomplete = () => {
+                tocarBeep(true);
+                mostrarToast('Ocorrência e anexos gravados com sucesso no IndexedDB!', 'success');
+                limparFormOcorrencia();
+                renderizarHistoricoOcorrencias();
+                atualizarDashboardMetrics();
+            };
+        }
+
+        function limparFormOcorrencia() {
+            document.getElementById('formOcorrencia').reset();
+            tempAnexos = [];
+            renderizarPreviewsAnexos();
+            toggleOcParcial(false);
+            document.getElementById('ocBipInput').focus();
+        }
+
+        // --- 6. HISTÓRICO & EXIBIÇÃO DE LAUDOS ---
+        async function renderizarHistoricoOcorrencias(listaFiltrada = null) {
+            const tx = db.transaction(['ocorrencias'], 'readonly');
+            const todas = await new Promise(res => tx.objectStore('ocorrencias').getAll().onsuccess = e => res(e.target.result));
+
+            const lista = listaFiltrada || todas;
+            const tbody = document.getElementById('tbodyOcorrencias');
+            tbody.innerHTML = '';
+
+            if (lista.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:#64748b;">Nenhuma ocorrência salva no histórico.</td></tr>`;
+                return;
+            }
+
+            lista.forEach(item => {
+                const tr = document.createElement('tr');
+                const badgeClass = item.isParcial ? 'badge-parcial' : 'badge-total';
+                const countAnexos = item.anexos ? item.anexos.length : 0;
+
+                tr.innerHTML = `
+                    <td><small>${item.dataHora}</small></td>
+                    <td><strong>${item.pedido}</strong></td>
+                    <td>${item.malote || '-'}</td>
+                    <td>${item.cliente}</td>
+                    <td>${item.transportadora}</td>
+                    <td><span class="badge ${badgeClass}">${item.itemSinalizado}</span></td>
+                    <td><strong>📎 ${countAnexos} arquivo(s)</strong></td>
+                    <td><strong>R$ ${item.valorTotal.toFixed(2)}</strong></td>
+                    <td><small>${item.registradoPor || '-'}</small></td>
+                    <td>
+                        <button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="abrirModalFichaOcorrencia(${item.id})">👁️ Ver Ficha</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function filtrarHistorico() {
+            const busca = document.getElementById('filtroBusca').value.toLowerCase();
+            const transp = document.getElementById('filtroTransp').value;
+
+            const tx = db.transaction(['ocorrencias'], 'readonly');
+            const todas = await new Promise(res => tx.objectStore('ocorrencias').getAll().onsuccess = e => res(e.target.result));
+
+            const filtradas = todas.filter(item => {
+                const mBusca = !busca || item.pedido.toLowerCase().includes(busca) || item.cliente.toLowerCase().includes(busca) || (item.malote && item.malote.toLowerCase().includes(busca));
+                const mTransp = !transp || item.transportadora === transp;
+                return mBusca && mTransp;
+            });
+
+            renderizarHistoricoOcorrencias(filtradas);
+        }
+
+        async function abrirModalFichaOcorrencia(id) {
+            const tx = db.transaction(['ocorrencias'], 'readonly');
+            const item = await new Promise(res => tx.objectStore('ocorrencias').get(id).onsuccess = e => res(e.target.result));
+
+            if (!item) return;
+
+            document.getElementById('modalFichaCorpo').innerHTML = `
+                <table style="width:100%; border:1px solid var(--border-color);">
+                    <tr><td><strong>Data/Hora Registro:</strong></td><td>${item.dataHora}</td></tr>
+                    <tr><td><strong>Pedido / Malote:</strong></td><td><strong>${item.pedido}</strong> (Malote: ${item.malote || '-'})</td></tr>
+                    <tr><td><strong>Cliente / Paciente:</strong></td><td>${item.cliente}</td></tr>
+                    <tr><td><strong>Transportadora:</strong></td><td>${item.transportadora}</td></tr>
+                    <tr><td><strong>Tipo / Setor:</strong></td><td>${item.tipo} / ${item.setor}</td></tr>
+                    <tr><td><strong>Modalidade:</strong></td><td>${item.itemSinalizado}</td></tr>
+                    <tr><td><strong>Valor Produto + Frete:</strong></td><td>R$ ${item.valorProduto.toFixed(2)} + R$ ${item.valorFrete.toFixed(2)} = <strong>R$ ${item.valorTotal.toFixed(2)}</strong></td></tr>
+                    <tr><td><strong>Motivo / Ação:</strong></td><td>${item.motivo} -> ${item.acao}</td></tr>
+                    <tr><td><strong>Registrado Por:</strong></td><td>${item.registradoPor || 'S/Inf'}</td></tr>
+                    <tr><td><strong>Observações:</strong></td><td>${item.obs || 'Nenhuma'}</td></tr>
+                </table>
+            `;
+
+            const containerAnexos = document.getElementById('modalFichaAnexos');
+            containerAnexos.innerHTML = '';
+
+            if (item.anexos && item.anexos.length > 0) {
+                item.anexos.forEach(a => {
+                    if (a.type.startsWith('image/')) {
+                        containerAnexos.innerHTML += `<a href="${a.dataUrl}" target="_blank"><img src="${a.dataUrl}" style="max-width:180px; max-height:180px; border-radius:6px; border:1px solid var(--border-color);"></a>`;
+                    } else {
+                        containerAnexos.innerHTML += `<a href="${a.dataUrl}" download="${a.name}" class="btn btn-outline">📄 Download ${a.name}</a>`;
+                    }
+                });
+            } else {
+                containerAnexos.innerHTML = '<span style="font-size:0.85rem; color:#64748b;">Nenhum anexo salvo nesta ocorrência.</span>';
+            }
+
+            document.getElementById('modalFicha').style.display = 'flex';
+        }
+
+        function fecharModalFicha() {
+            document.getElementById('modalFicha').style.display = 'none';
+        }
+
+        async function limparHistoricoIndexedDB() {
+            if (usuarioLogado.funcao !== 'ADM') return;
+            if (confirm("Deseja apagar TODO o histórico de ocorrências do banco?")) {
+                const tx = db.transaction(['ocorrencias'], 'readwrite');
+                tx.objectStore('ocorrencias').clear();
+                tx.oncomplete = () => {
+                    renderizarHistoricoOcorrencias();
+                    atualizarDashboardMetrics();
+                    mostrarToast('Histórico limpo.', 'info');
+                };
+            }
+        }
+
+        // --- 7. DASHBOARD & KPIS (CHART.JS) ---
+        async function atualizarDashboardMetrics() {
+            const txO = db.transaction(['ocorrencias'], 'readonly');
+            const ocorrencias = await new Promise(res => txO.objectStore('ocorrencias').getAll().onsuccess = e => res(e.target.result));
+
+            let totalPrejuizo = 0, totalFrete = 0, parciaisCount = 0;
+            let mapaTransp = {}, mapaTipos = { 'Devolução Total': 0, 'Devolução Parcial': 0 }, mapaSetores = {}, mapaMotivos = {};
+
+            ocorrencias.forEach(o => {
+                totalPrejuizo += o.valorTotal;
+                totalFrete += o.valorFrete;
+                if (o.isParcial) parciaisCount++;
+
+                mapaTransp[o.transportadora] = (mapaTransp[o.transportadora] || 0) + o.valorTotal;
+                o.isParcial ? mapaTipos['Devolução Parcial']++ : mapaTipos['Devolução Total']++;
+                mapaSetores[o.setor] = (mapaSetores[o.setor] || 0) + 1;
+                mapaMotivos[o.motivo] = (mapaMotivos[o.motivo] || 0) + 1;
+            });
+
+            document.getElementById('kpiTotalPrejuizo').textContent = `R$ ${totalPrejuizo.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+            document.getElementById('kpiTotalFrete').textContent = `R$ ${totalFrete.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+            document.getElementById('kpiQtdParciais').textContent = parciaisCount;
+
+            let topT = '-', maxV = 0;
+            for (let t in mapaTransp) {
+                if (mapaTransp[t] > maxV) { maxV = mapaTransp[t]; topT = t; }
+            }
+            document.getElementById('kpiTopTransp').textContent = topT;
+            document.getElementById('kpiTopTranspValor').textContent = `R$ ${maxV.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+
+            renderizarGraficosDashboard(mapaTransp, mapaTipos, mapaSetores, mapaMotivos);
+        }
+
+        function renderizarGraficosDashboard(mapaTransp, mapaTipos, mapaSetores, mapaMotivos) {
+            if (chartTranspInst) chartTranspInst.destroy();
+            if (chartTiposInst) chartTiposInst.destroy();
+            if (chartSetoresInst) chartSetoresInst.destroy();
+            if (chartMotivosInst) chartMotivosInst.destroy();
+
+            chartTranspInst = new Chart(document.getElementById('chartTransp'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(mapaTransp).length ? Object.keys(mapaTransp) : ['Nenhum'],
+                    datasets: [{ label: 'Prejuízo R$', data: Object.values(mapaTransp).length ? Object.values(mapaTransp) : [0], backgroundColor: '#2563eb' }]
+                },
+                options: { responsive: true }
+            });
+
+            chartTiposInst = new Chart(document.getElementById('chartTipos'), {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(mapaTipos),
+                    datasets: [{ data: Object.values(mapaTipos), backgroundColor: ['#ef4444', '#f59e0b'] }]
+                },
+                options: { responsive: true }
+            });
+
+            chartSetoresInst = new Chart(document.getElementById('chartSetores'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(mapaSetores).length ? Object.keys(mapaSetores) : ['S/ Reg'],
+                    datasets: [{ data: Object.values(mapaSetores).length ? Object.values(mapaSetores) : [1], backgroundColor: ['#dc2626', '#2563eb', '#9333ea', '#16a34a'] }]
+                },
+                options: { responsive: true }
+            });
+
+            chartMotivosInst = new Chart(document.getElementById('chartMotivos'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(mapaMotivos).length ? Object.keys(mapaMotivos) : ['S/ Reg'],
+                    datasets: [{ label: 'Ocorrências', data: Object.values(mapaMotivos).length ? Object.values(mapaMotivos) : [0], backgroundColor: '#d97706' }]
+                },
+                options: { indexAxis: 'y', responsive: true }
+            });
+        }
+
+        // --- 8. PODER SUPREMO ADM (PERSONALIZAÇÃO TOTAL) ---
+        function aplicarPersonalizacaoLive() {
+            const root = document.documentElement;
+
+            root.style.setProperty('--primary-color', document.getElementById('cfgColorPrimary').value);
+            root.style.setProperty('--header-bg', document.getElementById('cfgColorPrimary').value);
+            root.style.setProperty('--accent-color', document.getElementById('cfgColorAccent').value);
+            root.style.setProperty('--bg-color', document.getElementById('cfgColorBg').value);
+            root.style.setProperty('--card-bg-color', document.getElementById('cfgColorCard').value);
+            root.style.setProperty('--text-color', document.getElementById('cfgColorText').value);
+
+            root.style.setProperty('--font-family', document.getElementById('cfgFontFamily').value);
+
+            document.getElementById('lblHeaderTitle').textContent = document.getElementById('cfgTextTitle').value;
+            document.getElementById('lblHeaderSlogan').textContent = document.getElementById('cfgTextSlogan').value;
+            document.querySelector('.txt-tab-ocorrencias').textContent = document.getElementById('cfgTabOcorrencias').value;
+            document.querySelector('.txt-tab-dash').textContent = document.getElementById('cfgTabDash').value;
+            document.querySelector('.txt-tab-historico').textContent = document.getElementById('cfgTabHistorico').value;
+        }
+
+        async function salvarPersonalizacaoConfigDB() {
+            if (usuarioLogado.funcao !== 'ADM') return;
+
+            const cfg = {
+                key: 'themeConfig',
+                colorPrimary: document.getElementById('cfgColorPrimary').value,
+                colorAccent: document.getElementById('cfgColorAccent').value,
+                colorBg: document.getElementById('cfgColorBg').value,
+                colorCard: document.getElementById('cfgColorCard').value,
+                colorText: document.getElementById('cfgColorText').value,
+                fontFamily: document.getElementById('cfgFontFamily').value,
+                textTitle: document.getElementById('cfgTextTitle').value,
+                textSlogan: document.getElementById('cfgTextSlogan').value,
+                tabOcorrencias: document.getElementById('cfgTabOcorrencias').value,
+                tabDash: document.getElementById('cfgTabDash').value,
+                tabHistorico: document.getElementById('cfgTabHistorico').value
+            };
+
+            const tx = db.transaction(['configuracoes'], 'readwrite');
+            tx.objectStore('configuracoes').put(cfg);
+            tx.oncomplete = () => {
+                mostrarToast('Personalização salva no banco IndexedDB!', 'success');
+            };
+        }
+
+        async function carregarConfiguracoesADM() {
+            const tx = db.transaction(['configuracoes'], 'readonly');
+            const cfg = await new Promise(res => tx.objectStore('configuracoes').get('themeConfig').onsuccess = e => res(e.target.result));
+
+            if (cfg) {
+                document.getElementById('cfgColorPrimary').value = cfg.colorPrimary;
+                document.getElementById('cfgColorAccent').value = cfg.colorAccent;
+                document.getElementById('cfgColorBg').value = cfg.colorBg;
+                document.getElementById('cfgColorCard').value = cfg.colorCard;
+                document.getElementById('cfgColorText').value = cfg.colorText;
+                document.getElementById('cfgFontFamily').value = cfg.fontFamily;
+                document.getElementById('cfgTextTitle').value = cfg.textTitle;
+                document.getElementById('cfgTextSlogan').value = cfg.textSlogan;
+                document.getElementById('cfgTabOcorrencias').value = cfg.tabOcorrencias;
+                document.getElementById('cfgTabDash').value = cfg.tabDash;
+                document.getElementById('cfgTabHistorico').value = cfg.tabHistorico;
+
+                aplicarPersonalizacaoLive();
+            }
+        }
+
+        function restaurarPadraoConfig() {
+            document.getElementById('cfgColorPrimary').value = "#0f172a";
+            document.getElementById('cfgColorAccent').value = "#2563eb";
+            document.getElementById('cfgColorBg').value = "#f8fafc";
+            document.getElementById('cfgColorCard').value = "#ffffff";
+            document.getElementById('cfgColorText').value = "#1e293b";
+            document.getElementById('cfgFontFamily').value = "'Inter', sans-serif";
+            document.getElementById('cfgTextTitle').value = "Stin Pharma ERP";
+            document.getElementById('cfgTextSlogan').value = "Central de Avarias & Gestão";
+            document.getElementById('cfgTabOcorrencias').value = "Central de Ocorrências";
+            document.getElementById('cfgTabDash').value = "Dashboard KPIs";
+            document.getElementById('cfgTabHistorico').value = "Histórico & Fichas";
+
+            aplicarPersonalizacaoLive();
+            salvarPersonalizacaoConfigDB();
+        }
+
+        // --- 9. HELPERS ---
+        function getCampoFuzzy(obj, listaNomes) {
+            for (let key of Object.keys(obj)) {
+                const kClean = key.trim().toLowerCase();
+                for (let nome of listaNomes) {
+                    if (kClean === nome.toLowerCase() || kClean.startsWith(nome.toLowerCase())) return obj[key];
+                }
+            }
+            return '';
+        }
+
+        function parseValNum(val) {
+            if (typeof val === 'number') return val;
+            if (!val) return 0;
+            let s = String(val).replace('R$', '').replace(/\s/g, '').replace('.', '').replace(',', '.');
+            let n = parseFloat(s);
+            return isNaN(n) ? 0 : n;
+        }
+    </script>
+</body>
+</html>

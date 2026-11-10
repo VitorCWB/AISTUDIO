@@ -1,0 +1,6 @@
+{
+  "summary":  "Plano de implementação para o sistema de logs de auditoria no IndexedDB que registra todas as alterações de status de ocorrências com ID do usuário, data/hora e perfil, visualizável em aba exclusiva para Administradores, com controle RBAC permitindo alterações apenas por Farmacêuticos e Administradores.",
+  "updatedAt":  "2026-11-10T14:17:33.075061151Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

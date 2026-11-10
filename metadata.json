@@ -1,0 +1,6 @@
+{
+  "name": "Stin Pharma ERP - Central de Avarias & Devoluções",
+  "description": "Sistema de gestão logística farmacêutica para controle e triagem de quebras, avarias, devoluções parciais/totais, conferência de frete e laudos técnicos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
